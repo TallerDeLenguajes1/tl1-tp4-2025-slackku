@@ -19,6 +19,9 @@ Nodo *crearListaVacia();
 Nodo *crearNodo(Tarea datoTarea);
 void *insertarNodo(Nodo **lista, Nodo *nodo);
 Tarea crearTarea(int iteracion);
+void moverATerminadas(Nodo **listaPendientes, Nodo **listaTerminadas);
+void mostrarLista(Nodo **lista);
+Nodo *eliminarNodo(Nodo **lista);
 
 int main()
 {
@@ -38,9 +41,32 @@ int main()
         scanf("%d", &buffCargaListas);
         fflush(stdin);
     }
-
-    
-
+    printf("-- Ingreso de Tareas Terminada --\n");
+    Nodo *auxPendientes = tareasPendientes;
+    while (auxPendientes)
+    {
+        printf("Tarea ID: %d\n", auxPendientes->T.TareaID);
+        printf("Descripcion: %s\n", auxPendientes->T.Descripcion);
+        printf("Duracion: %d\n", auxPendientes->T.Duracion);
+        printf("-.-.-.-.-.-.-.-.-.-.-\n");
+        printf("Si la tarea ha sido finalizada ingrese 1. Caso contrario ingresar 0: ");
+        scanf("%d", &buffCargaListas);
+        if (buffCargaListas == 1)
+        {
+            moverATerminadas(&tareasPendientes, &tareasTerminadas);
+            auxPendientes = tareasPendientes;
+            buffCargaListas = 0;
+        }
+        else
+        {
+            auxPendientes = auxPendientes->Siguiente;
+        }
+    }
+    printf("-- Listas Finales --\n");
+    printf("Lista de Pendientes:\n");
+    mostrarLista(&tareasPendientes);
+    printf("Lista de Terminadas:\n");
+    mostrarLista(&tareasTerminadas);
     return 0;
 }
 
@@ -88,4 +114,25 @@ Nodo *crearNodo(Tarea datoTarea)
     nodo->T = datoTarea;
     nodo->Siguiente = NULL;
     return nodo;
+}
+
+void moverATerminadas(Nodo **listaPendientes, Nodo **listaTerminadas)
+{
+    Nodo *pendienteAux = *listaPendientes;
+    *listaPendientes = pendienteAux->Siguiente;
+    pendienteAux->Siguiente = *listaTerminadas;
+    *listaTerminadas = pendienteAux;
+}
+
+void mostrarLista(Nodo **lista)
+{
+    Nodo *aux = *lista;
+    while (aux)
+    {
+        printf("Tarea ID: %d\n", aux->T.TareaID);
+        printf("Descripcion: %s\n", aux->T.Descripcion);
+        printf("Duracion: %d\n", aux->T.Duracion);
+        printf("--------------------------------------\n");
+        aux = aux->Siguiente;
+    }
 }
