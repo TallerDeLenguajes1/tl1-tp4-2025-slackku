@@ -22,6 +22,7 @@ Tarea crearTarea(int iteracion);
 void moverATerminadas(Nodo **listaPendientes, Nodo **listaTerminadas);
 void mostrarLista(Nodo **lista);
 Nodo *eliminarNodo(Nodo **lista);
+void mostrarEspecifo(Nodo **lista); // Por id o palabra clave
 
 int main()
 {
@@ -43,6 +44,7 @@ int main()
     }
     printf("-- Ingreso de Tareas Terminada --\n");
     Nodo *auxPendientes = tareasPendientes;
+    // FIX THIS | Mal recorrido de la lista
     while (auxPendientes)
     {
         printf("Tarea ID: %d\n", auxPendientes->T.TareaID);
@@ -136,3 +138,51 @@ void mostrarLista(Nodo **lista)
         aux = aux->Siguiente;
     }
 }
+
+void mostrarEspecifo(Nodo **lista)
+{
+    Nodo *listaAux = *lista;
+    int aux;
+    printf("---- Ingresar segun lo deseado ----\n");
+    printf("Buscar por id = [1] | Buscar por palabra cable = [2]\n");
+    scanf("%d", &aux);
+    switch (aux)
+    {
+    case 0:
+        mostrarPorId(lista);
+        break;
+    case 1:
+        mostrarPorPalabraClave(lista);
+        break;
+    }
+}
+
+void mostrarPorId(Nodo **lista)
+{
+    Nodo *listaAux = *lista;
+    int idDato;
+    printf("Ingrese el id deseado");
+    scanf("%d", &idDato);
+    if (idDato >= 1000)
+    {
+        while (listaAux && idDato != listaAux->T.TareaID)
+        {
+            listaAux = listaAux->Siguiente;
+        }
+        if (!listaAux)
+        {
+            printf("La tarea de id %d, es:\n", idDato);
+            printf("Descripcion: %s\n", listaAux->T.Descripcion);
+            printf("Duracion: %d\n", listaAux->T.Duracion);
+        }
+        else
+        {
+            printf("No ha sido encontrada ninguna tarea de id: %d\n", idDato);
+        }
+    }
+    else
+    {
+        printf("No existen tareas de id %d\n", idDato);
+    }
+}
+void mostrarPorPalabraClave(lista);
