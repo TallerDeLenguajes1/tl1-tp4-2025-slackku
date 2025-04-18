@@ -19,10 +19,12 @@ Nodo *crearListaVacia();
 Nodo *crearNodo(Tarea datoTarea);
 void *insertarNodo(Nodo **lista, Nodo *nodo);
 Tarea crearTarea(int iteracion);
-void moverATerminadas(Nodo **listaPendientes, Nodo **listaTerminadas);
+void marcarTareaTerminada(Nodo **listaPendientes, Nodo **listaTerminadas, int *buffEntrada);
 void mostrarLista(Nodo **lista);
 Nodo *eliminarNodo(Nodo **lista);
-void mostrarEspecifo(Nodo **lista); // Por id o palabra clave
+void mostrarEspecifo(Nodo **listaTerminadas, Nodo **listaPendientes); // Por id o palabra clave
+void mostrarPorId(Nodo **lista, int id);
+void mostrarPorPalabraClave(Nodo **lista, char *palabraClave);
 
 int main()
 {
@@ -42,33 +44,18 @@ int main()
         scanf("%d", &buffCargaListas);
         fflush(stdin);
     }
-    printf("-- Ingreso de Tareas Terminada --\n");
-    Nodo *auxPendientes = tareasPendientes;
-    // FIX THIS | Mal recorrido de la lista
-    while (auxPendientes)
-    {
-        printf("Tarea ID: %d\n", auxPendientes->T.TareaID);
-        printf("Descripcion: %s\n", auxPendientes->T.Descripcion);
-        printf("Duracion: %d\n", auxPendientes->T.Duracion);
-        printf("-.-.-.-.-.-.-.-.-.-.-\n");
-        printf("Si la tarea ha sido finalizada ingrese 1. Caso contrario ingresar 0: ");
-        scanf("%d", &buffCargaListas);
-        if (buffCargaListas == 1)
-        {
-            moverATerminadas(&tareasPendientes, &tareasTerminadas);
-            auxPendientes = tareasPendientes;
-            buffCargaListas = 0;
-        }
-        else
-        {
-            auxPendientes = auxPendientes->Siguiente;
-        }
-    }
-    printf("-- Listas Finales --\n");
-    printf("Lista de Pendientes:\n");
+    printf("-- Ingreso de Tareas Terminadas --\n");
+
+    marcarTareaTerminada(&tareasPendientes, &tareasTerminadas, &buffCargaListas);
+
+    printf("#####     Listas Finales     ####\n");
+    printf("---- | Lista de Pendientes | ----\n");
     mostrarLista(&tareasPendientes);
-    printf("Lista de Terminadas:\n");
+    printf("---- | Lista de Terminadas | ----\n");
     mostrarLista(&tareasTerminadas);
+
+    mostrarEspecifo(&tareasTerminadas, &tareasPendientes);
+
     return 0;
 }
 
@@ -118,12 +105,42 @@ Nodo *crearNodo(Tarea datoTarea)
     return nodo;
 }
 
-void moverATerminadas(Nodo **listaPendientes, Nodo **listaTerminadas)
+void marcarTareaTerminada(Nodo **listaPendientes, Nodo **listaTerminadas, int *buffEntrada)
 {
-    Nodo *pendienteAux = *listaPendientes;
-    *listaPendientes = pendienteAux->Siguiente;
-    pendienteAux->Siguiente = *listaTerminadas;
-    *listaTerminadas = pendienteAux;
+    Nodo *head = *listaPendientes;
+    Nodo *nodoAnterior = NULL;
+
+    while (head)
+    {
+        printf("Tarea ID: %d\n", head->T.TareaID);
+        printf("Descripcion: %s\n", head->T.Descripcion);
+        printf("Duracion: %d\n", head->T.Duracion);
+        printf("-.-.-.-.-.-.-.-.-.-.-\n");
+        printf("Si la tarea ha sido finalizada ingrese 1. Caso contrario ingresar 0: ");
+        scanf("%d", buffEntrada);
+
+        if (*buffEntrada == 1)
+        {
+            Nodo *tareaTerminada = head;
+            head = head->Siguiente;
+
+            if (!nodoAnterior)
+            {
+                *listaPendientes = head;
+            }
+            else
+            {
+                nodoAnterior->Siguiente = head;
+            }
+            tareaTerminada->Siguiente = NULL;
+            insertarNodo(listaTerminadas, tareaTerminada);
+        }
+        else
+        {
+            nodoAnterior = head;
+            head = head->Siguiente;
+        }
+    }
 }
 
 void mostrarLista(Nodo **lista)
@@ -134,55 +151,87 @@ void mostrarLista(Nodo **lista)
         printf("Tarea ID: %d\n", aux->T.TareaID);
         printf("Descripcion: %s\n", aux->T.Descripcion);
         printf("Duracion: %d\n", aux->T.Duracion);
-        printf("--------------------------------------\n");
+        printf("-------------------------\n");
         aux = aux->Siguiente;
     }
 }
 
-void mostrarEspecifo(Nodo **lista)
+void mostrarEspecifo(Nodo **listaTerminadas, Nodo **listaPendientes)
 {
-    Nodo *listaAux = *lista;
-    int aux;
+    int aux, idDato;
+    char *buff = (char *)malloc(sizeof(char) * 50);
+
     printf("---- Ingresar segun lo deseado ----\n");
-    printf("Buscar por id = [1] | Buscar por palabra cable = [2]\n");
+    printf("Buscar por id = [1] | Buscar por palabra clave = [2]\n");
     scanf("%d", &aux);
+    fflush(stdin);
     switch (aux)
     {
-    case 0:
-        mostrarPorId(lista);
-        break;
     case 1:
-        mostrarPorPalabraClave(lista);
+        printf("Ingrese el id deseado: ");
+        scanf("%d", &idDato);
+        fflush(stdin);
+
+        printf("Buscando en lista Pendientes: \n");
+        mostrarPorId(listaPendientes, idDato);
+        printf("Buscando en lista Terminadas: \n");
+        mostrarPorId(listaTerminadas, idDato);
+
+        break;
+    case 2:
+        printf("Ingrese la palabra clave: ");
+        gets(buff);
+        printf("Buscando en lista Pendientes: \n");
+        mostrarPorPalabraClave(listaPendientes, buff);
+        printf("Buscando en lista Terminadas: \n");
+        mostrarPorPalabraClave(listaTerminadas, buff);
+
         break;
     }
 }
 
-void mostrarPorId(Nodo **lista)
+void mostrarPorId(Nodo **lista, int id)
 {
     Nodo *listaAux = *lista;
-    int idDato;
-    printf("Ingrese el id deseado");
-    scanf("%d", &idDato);
-    if (idDato >= 1000)
+
+    while (listaAux != NULL && id != listaAux->T.TareaID)
     {
-        while (listaAux && idDato != listaAux->T.TareaID)
-        {
-            listaAux = listaAux->Siguiente;
-        }
-        if (!listaAux)
-        {
-            printf("La tarea de id %d, es:\n", idDato);
-            printf("Descripcion: %s\n", listaAux->T.Descripcion);
-            printf("Duracion: %d\n", listaAux->T.Duracion);
-        }
-        else
-        {
-            printf("No ha sido encontrada ninguna tarea de id: %d\n", idDato);
-        }
+        listaAux = listaAux->Siguiente;
+    }
+
+    if (listaAux != NULL)
+    {
+        printf("###############\n");
+        printf("# Tarea Encontrada - Datos encontrados\n");
+        printf("# La tarea de id %d, es:\n", id);
+        printf("# Descripcion: %s\n", listaAux->T.Descripcion);
+        printf("# Duracion: %d\n", listaAux->T.Duracion);
+        printf("###############\n");
     }
     else
     {
-        printf("No existen tareas de id %d\n", idDato);
+        printf("No ha sido encontrada ninguna tarea de id: %d en la lista.\n", id);
     }
 }
-void mostrarPorPalabraClave(lista);
+
+void mostrarPorPalabraClave(Nodo **lista, char *palabraClave)
+{
+    Nodo *listaAux = *lista;
+    char *coincidencia;
+    while (listaAux)
+    {
+        coincidencia = strstr(listaAux->T.Descripcion, palabraClave);
+        if (coincidencia != NULL && strlen(palabraClave) != 0)
+        {
+            printf("Tarea Encontrada - Datos encontrados\n");
+            printf("La tarea de id %d, es:\n", listaAux->T.TareaID);
+            printf("Descripcion: %s\n", listaAux->T.Descripcion);
+            printf("Duracion: %d\n", listaAux->T.Duracion);
+        }
+        listaAux = listaAux->Siguiente;
+    }
+    if (coincidencia == NULL || strlen(palabraClave) == 0)
+    {
+        printf("No ha sido encontrada ninguna con la palabra clave %s en la lista.\n", palabraClave);
+    }
+}
